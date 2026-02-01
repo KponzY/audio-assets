@@ -3,24 +3,58 @@
 <head>
   <meta charset="utf-8">
   <title>集計演出画面</title>
+  <style>
+    body { margin:0; background:#111; color:#fff; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { display:flex; height:100vh; }
+    #img { width:45%; object-fit:cover; }
+    .right { flex:1; padding:48px; display:flex; flex-direction:column; gap:18px; }
+    #caption { font-size:56px; line-height:1.15; margin:0; }
+    .barOuter { height:18px; background:#444; border-radius:10px; overflow:hidden; }
+    #bar { height:100%; width:0%; background:#4caf50; transition: width .6s ease; }
+    #percent { font-size:36px; opacity:.9; }
+    #hint { font-size:16px; opacity:.65; margin-top:auto; }
+  </style>
 </head>
 
-<body style="margin:0; background:#111; color:#fff;">
-  <div style="display:flex; height:100vh;">
-    <img id="img" style="width:40%; object-fit:cover;">
-    <div style="flex:1; padding:40px;">
+<body>
+  <div class="wrap">
+    <img id="img" src="ai.png" alt="worker">
+    <div class="right">
       <h1 id="caption">集計準備中…</h1>
-
-      <div style="height:12px; background:#444; border-radius:6px; overflow:hidden;">
-        <div id="bar"
-             style="height:100%; width:0%; background:#4caf50;
-                    transition:width .6s ease;">
-        </div>
-      </div>
-
-      <div id="percent" style="margin-top:12px; font-size:20px;">0%</div>
+      <div class="barOuter"><div id="bar"></div></div>
+      <div id="percent">0%</div>
+      <div id="hint">※この画面は投影用です（サイドバー操作で更新）</div>
     </div>
   </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  function applyState(s){
+    if (!s) return;
+    if (typeof s.img === 'string') $('img').src = s.img;               // 例: 'ai.png' or 'sorayama.png' or full URL
+    if (typeof s.caption === 'string') $('caption').textContent = s.caption;
+    if (typeof s.progress === 'number') {
+      const p = Math.max(0, Math.min(100, s.progress));
+      $('bar').style.width = p + '%';
+      $('percent').textContent = p + '%';
+    }
+  }
+
+  // サイドバー（別ドメイン）から postMessage を受け取って更新
+  window.addEventListener('message', (ev) => {
+    // セキュリティ強化したい場合は、ここで ev.origin をチェックしてOK
+    // 例: if (!String(ev.origin).includes('google')) return;
+
+    if (ev && ev.data && ev.data.type === 'VIS_STATE') {
+      applyState(ev.data.payload);
+    }
+  });
+
+  // 初期表示（念のため）
+  applyState({ img:'ai.png', caption:'集計準備中…', progress:0 });
+</script>
 </body>
 </html>
+
 
