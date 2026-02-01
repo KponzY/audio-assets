@@ -1,1 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>集計演出画面</title>
+</head>
+
+<body style="margin:0; background:#111; color:#fff;">
+  <div style="display:flex; height:100vh;">
+    <img id="img" style="width:40%; object-fit:cover;">
+    <div style="flex:1; padding:40px;">
+      <h1 id="caption">集計準備中…</h1>
+
+      <div style="height:12px; background:#444; border-radius:6px; overflow:hidden;">
+        <div id="bar"
+             style="height:100%; width:0%; background:#4caf50;
+                    transition:width .6s ease;">
+        </div>
+      </div>
+
+      <div id="percent" style="margin-top:12px; font-size:20px;">0%</div>
+    </div>
+  </div>
+</body>
+</html>
 
