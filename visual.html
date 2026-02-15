@@ -30,10 +30,28 @@
 <script>
   const $ = (id) => document.getElementById(id);
 
+  // GitHub Pages上の assets を基準に相対パスを補完（ai.png → https://.../ai.png）
+  const BASE = 'https://kponzy.github.io/audio-assets/';
+
+  function resolveImgSrc_(src){
+    if (!src) return src;
+    // すでに http(s) / data URL ならそのまま
+    if (/^(https?:|data:)/i.test(src)) return src;
+    // 先頭が / の場合はドメイン直下扱いになるので、基本は BASE に寄せる
+    if (src.startsWith('/')) return BASE + src.replace(/^\/+/, '');
+    // 相対は BASE へ
+    return BASE + src;
+  }
+
   function applyState(s){
     if (!s) return;
-    if (typeof s.img === 'string') $('img').src = s.img;               // 例: 'ai.png' or 'sorayama.png' or full URL
-    if (typeof s.caption === 'string') $('caption').textContent = s.caption;
+
+    if (typeof s.img === 'string') {
+      $('img').src = resolveImgSrc_(s.img);
+    }
+    if (typeof s.caption === 'string') {
+      $('caption').textContent = s.caption;
+    }
     if (typeof s.progress === 'number') {
       const p = Math.max(0, Math.min(100, s.progress));
       $('bar').style.width = p + '%';
@@ -41,13 +59,22 @@
     }
   }
 
-  // サイドバー（別ドメイン）から postMessage を受け取って更新
+  // サイドバーから postMessage を受け取って更新
   window.addEventListener('message', (ev) => {
-    // セキュリティ強化したい場合は、ここで ev.origin をチェックしてOK
-    // 例: if (!String(ev.origin).includes('google')) return;
+    if (!ev || !ev.data) return;
 
-    if (ev && ev.data && ev.data.type === 'VIS_STATE') {
-      applyState(ev.data.payload);
+    const d = ev.data;
+
+    // ✅新形式：{img, caption, progress} を直で送ってくる（あなたのサイドバーがこれ）
+    if (typeof d === 'object' && ('img' in d || 'caption' in d || 'progress' in d)) {
+      applyState(d);
+      return;
+    }
+
+    // ✅旧形式：{type:'VIS_STATE', payload:{...}} にも対応（互換）
+    if (d && d.type === 'VIS_STATE') {
+      applyState(d.payload);
+      return;
     }
   });
 
@@ -56,5 +83,3 @@
 </script>
 </body>
 </html>
-
-
