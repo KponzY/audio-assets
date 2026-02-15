@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event Display</title>
+  <style>
+    /* 黒背景でど真ん中に画像を表示するスタイル */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000; /* 背景真っ黒 */
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    #event-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain; /* 比率を保って画面内に収める */
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); /* ほんのり発光演出 */
+    }
+  </style>
+</head>
+<body>
+  <!-- ここに画像が表示されます -->
+  <img id="event-img" src="" alt="Waiting for event...">
+
+  <script>
+    // URLの ?id=EVT-xxx 部分を読み取る
+    const params = new URLSearchParams(window.location.search);
+    const evtId = params.get('id');
+
+    if (evtId) {
+      // 画像ファイル名を設定（同じフォルダ内の .png を指定）
+      // 例: EVT-001.png
+      const imgPath = evtId.trim() + '.png';
+      document.getElementById('event-img').src = imgPath;
+      
+      console.log('Displaying:', imgPath);
+    }
+  </script>
+</body>
+</html>
