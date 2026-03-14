@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>TURN5</title>
+<style>
+html,body{
+margin:0;
+background:#000;
+height:100%;
+}
+video{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+</style>
+</head>
+
+<body>
+
+<video id="v" autoplay playsinline>
+<source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
+</video>
+
+<script>
+
+const v=document.getElementById("v");
+
+v.onended=()=>{
+
+setTimeout(()=>{
+
+if(window.opener){
+window.opener.postMessage(
+{type:"TURN5_VIDEO_END"},
+"*"
+);
+}
+
+},500);
+
+};
+
+</script>
+
+</body>
+</html>
