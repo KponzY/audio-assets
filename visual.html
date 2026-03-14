@@ -2,84 +2,170 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>集計演出画面</title>
+  <title>Visual Screen</title>
   <style>
-    body { margin:0; background:#111; color:#fff; font-family: system-ui, -apple-system, sans-serif; }
-    .wrap { display:flex; height:100vh; }
-    #img { width:45%; object-fit:cover; }
-    .right { flex:1; padding:48px; display:flex; flex-direction:column; gap:18px; }
-    #caption { font-size:56px; line-height:1.15; margin:0; }
-    .barOuter { height:18px; background:#444; border-radius:10px; overflow:hidden; }
-    #bar { height:100%; width:0%; background:#4caf50; transition: width .6s ease; }
-    #percent { font-size:36px; opacity:.9; }
-    #hint { font-size:16px; opacity:.65; margin-top:auto; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: system-ui, sans-serif;
+    }
+
+    .wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      display: flex;
+      flex-direction: row;
+    }
+
+    #img {
+      width: 45%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+      display: block;
+    }
+
+    .right {
+      flex: 1;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(135deg, #111, #1a1a1a);
+      color: #fff;
+    }
+
+    #caption {
+      font-size: 56px;
+      line-height: 1.15;
+      margin: 0 0 28px 0;
+      font-weight: 700;
+    }
+
+    .barOuter {
+      width: 100%;
+      height: 22px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    #bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00f2ff, #00ff9d);
+      transition: width .5s ease;
+    }
+
+    #percent {
+      margin-top: 18px;
+      font-size: 34px;
+      opacity: .92;
+    }
+
+    #hint {
+      margin-top: auto;
+      font-size: 16px;
+      opacity: .65;
+    }
+
+    #fsBtn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 20;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+
+    #fsBtn:hover {
+      background: rgba(255,255,255,0.14);
+    }
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <img id="img" src="ai.png" alt="worker">
+  <div class="wrap" id="app">
+    <button id="fsBtn">全画面</button>
+
+    <img id="img" src="" alt="visual">
+
     <div class="right">
-      <h1 id="caption">集計準備中…</h1>
-      <div class="barOuter"><div id="bar"></div></div>
+      <h1 id="caption">演出待機中...</h1>
+
+      <div class="barOuter">
+        <div id="bar"></div>
+      </div>
+
       <div id="percent">0%</div>
-      <div id="hint">※この画面は投影用です（サイドバー操作で更新）</div>
+      <div id="hint">presentation screen</div>
     </div>
   </div>
 
-<script>
-  const $ = (id) => document.getElementById(id);
+  <script>
+    const img = document.getElementById('img');
+    const caption = document.getElementById('caption');
+    const bar = document.getElementById('bar');
+    const percent = document.getElementById('percent');
+    const fsBtn = document.getElementById('fsBtn');
 
-  // GitHub Pages上の assets を基準に相対パスを補完（ai.png → https://.../ai.png）
-  const BASE = 'https://kponzy.github.io/audio-assets/';
+    function updateView(data){
+      if (!data) return;
 
-  function resolveImgSrc_(src){
-    if (!src) return src;
-    // すでに http(s) / data URL ならそのまま
-    if (/^(https?:|data:)/i.test(src)) return src;
-    // 先頭が / の場合はドメイン直下扱いになるので、基本は BASE に寄せる
-    if (src.startsWith('/')) return BASE + src.replace(/^\/+/, '');
-    // 相対は BASE へ
-    return BASE + src;
-  }
-
-  function applyState(s){
-    if (!s) return;
-
-    if (typeof s.img === 'string') {
-      $('img').src = resolveImgSrc_(s.img);
-    }
-    if (typeof s.caption === 'string') {
-      $('caption').textContent = s.caption;
-    }
-    if (typeof s.progress === 'number') {
-      const p = Math.max(0, Math.min(100, s.progress));
-      $('bar').style.width = p + '%';
-      $('percent').textContent = p + '%';
-    }
-  }
-
-  // サイドバーから postMessage を受け取って更新
-  window.addEventListener('message', (ev) => {
-    if (!ev || !ev.data) return;
-
-    const d = ev.data;
-
-    // ✅新形式：{img, caption, progress} を直で送ってくる（あなたのサイドバーがこれ）
-    if (typeof d === 'object' && ('img' in d || 'caption' in d || 'progress' in d)) {
-      applyState(d);
-      return;
+      if (typeof data.img === 'string' && data.img) {
+        img.src = data.img;
+      }
+      if (typeof data.caption === 'string') {
+        caption.textContent = data.caption;
+      }
+      if (typeof data.progress === 'number') {
+        const p = Math.max(0, Math.min(100, data.progress));
+        bar.style.width = p + '%';
+        percent.textContent = p + '%';
+      }
     }
 
-    // ✅旧形式：{type:'VIS_STATE', payload:{...}} にも対応（互換）
-    if (d && d.type === 'VIS_STATE') {
-      applyState(d.payload);
-      return;
-    }
-  });
+    window.addEventListener('message', (e) => {
+      updateView(e.data);
+    });
 
-  // 初期表示（念のため）
-  applyState({ img:'ai.png', caption:'集計準備中…', progress:0 });
-</script>
+    async function enterFullscreen_(){
+      const el = document.documentElement;
+      try {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+        } else if (el.msRequestFullscreen) {
+          el.msRequestFullscreen();
+        }
+      } catch (e) {
+        console.log('fullscreen blocked:', e);
+      }
+    }
+
+    fsBtn.addEventListener('click', enterFullscreen_);
+
+    window.addEventListener('load', () => {
+      // 開いた直後に1回だけ試す
+      setTimeout(() => {
+        enterFullscreen_();
+      }, 300);
+    });
+  </script>
 </body>
 </html>
