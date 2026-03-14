@@ -1,48 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-<meta charset="utf-8">
-<title>TURN5</title>
-<style>
-html,body{
-margin:0;
-background:#000;
-height:100%;
-}
-video{
-width:100%;
-height:100%;
-object-fit:contain;
-}
-</style>
+  <meta charset="utf-8">
+  <title>TURN5 Final Visual</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+    .wrap {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      position: relative;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+    #fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.78);
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      font-size: 20px;
+      z-index: 10;
+      cursor: pointer;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <video id="finalVideo" playsinline preload="auto" muted>
+      <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
+    </video>
+    <div id="fallback">クリックして動画を再生</div>
+  </div>
 
-<video id="v" autoplay playsinline>
-<source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
-</video>
+  <script>
+    const v = document.getElementById('finalVideo');
+    const fallback = document.getElementById('fallback');
+    let started = false;
 
-<script>
+    function notifyParent(type, extra) {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(Object.assign({ type }, extra || {}), '*');
+      }
+    }
 
-const v=document.getElementById("v");
+    async function startVideo() {
+      try {
+        // まず無音で再生を通す
+        v.muted = true;
+        await v.play();
 
-v.onended=()=>{
+        started = true;
+        fallback.style.display = 'none';
+        notifyParent('TURN5_VIDEO_READY');
 
-setTimeout(()=>{
+        // 再生が通った後で音を戻す
+        setTimeout(() => {
+          try { v.muted = false; } catch(e){}
+        }, 300);
 
-if(window.opener){
-window.opener.postMessage(
-{type:"TURN5_VIDEO_END"},
-"*"
-);
-}
+      } catch (e) {
+        console.log('autoplay blocked:', e);
+        fallback.style.display = 'flex';
+      }
+    }
 
-},500);
+    window.addEventListener('load', startVideo);
+    fallback.addEventListener('click', startVideo);
 
-};
+    v.addEventListener('ended', () => {
+      notifyParent('TURN5_VIDEO_END');
+    });
 
-</script>
-
+    v.addEventListener('error', () => {
+      notifyParent('TURN5_VIDEO_ERROR', { message: 'video error' });
+      fallback.style.display = 'flex';
+    });
+  </script>
 </body>
 </html>
