@@ -210,10 +210,12 @@ function hideResultScreen(){
       }
     }
 
-   window.addEventListener('message', (e) => {
+  window.addEventListener('message', (e) => {
   const data = e.data || {};
 
+  // ★結果表示（追加）
   if (data.type === 'SHOW_RESULT') {
+    console.log('SHOW_RESULT受信', data);
     showResultScreen(data.resultType);
     return;
   }
@@ -223,6 +225,7 @@ function hideResultScreen(){
     return;
   }
 
+  // ★既存処理は絶対残す
   updateView(data);
 });
 
