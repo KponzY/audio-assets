@@ -163,35 +163,34 @@ function showResultScreen(type){
   const src = RESULT_MAP[type];
   if (!src) return;
 
-  document.getElementById('app').style.display = 'none';
+  const app = document.getElementById('app');
+
+  // まず既存レイアウトを即消す
+  app.style.display = 'none';
+
+  // 背景を真っ黒に固定
+  document.body.style.background = '#000';
 
   worldImage.src = src;
-  worldImage.classList.add('show');
+  worldImage.style.display = 'block';
 
-  resultBgm.src = BGM_URL;
-  resultBgm.currentTime = 0;
-
-  // ★ここが方法B
-  resultBgm.volume = 0;
-
-  resultBgm.play().then(()=>{
-    resultBgm.volume = 0.7;
-  }).catch((e) => {
-    console.log('result bgm blocked:', e);
+  // 1フレーム待ってからフェード表示
+  requestAnimationFrame(() => {
+    worldImage.classList.add('show');
   });
 
-  resultBgm.onended = () => {
+  setTimeout(() => {
     hideResultScreen();
-  };
+  }, 22000);
 }
 
 function hideResultScreen(){
-  try {
-    resultBgm.pause();
-    resultBgm.currentTime = 0;
-  } catch(e){}
+  const app = document.getElementById('app');
 
   worldImage.classList.remove('show');
+  worldImage.style.display = 'none';
+
+  app.style.display = 'flex';
 }
 
     function updateView(data){
