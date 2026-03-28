@@ -163,20 +163,25 @@ function showResultScreen(type){
   const src = RESULT_MAP[type];
   if (!src) return;
 
+  document.getElementById('app').style.display = 'none';
+
   worldImage.src = src;
   worldImage.classList.add('show');
 
   resultBgm.src = BGM_URL;
   resultBgm.currentTime = 0;
-  resultBgm.play().catch((e) => {
+
+  // ★ここが方法B
+  resultBgm.volume = 0;
+
+  resultBgm.play().then(()=>{
+    resultBgm.volume = 0.7;
+  }).catch((e) => {
     console.log('result bgm blocked:', e);
   });
 
   resultBgm.onended = () => {
     hideResultScreen();
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage({ type: 'RESULT_ENDED' }, '*');
-    }
   };
 }
 
