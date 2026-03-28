@@ -97,29 +97,11 @@
       background: rgba(255,255,255,0.14);
     }
     
-#worldImage {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
-  background: #000;
-  z-index: 9999;
-  opacity: 0;
-  display: none;
-  transition: opacity 0.8s ease;
-}
-
-#worldImage.show {
-  opacity: 1;
-}
     
   </style>
 </head>
 <body>
-<audio id="resultBgm"></audio>
-<img id="worldImage" alt="world result">
-  
+
   <div class="wrap" id="app">
     <button id="fsBtn">全画面</button>
 
@@ -144,56 +126,7 @@
     const percent = document.getElementById('percent');
     const fsBtn = document.getElementById('fsBtn');
 
-    const resultBgm = document.getElementById('resultBgm');
-const worldImage = document.getElementById('worldImage');
-
-const BGM_URL = 'https://raw.githubusercontent.com/KponzY/audio-assets/2a8fc24c8f74aa9973c6f8470ffab08f7b58b76c/showing_result.mp3';
-
-const RESULT_MAP = {
-  W111: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W111_ideal_society.png',
-  W110: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W110_inequality_society.png',
-  W101: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W101_sustainable_slow_growth.png',
-  W100: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W100_environment_overregulated.png',
-  W011: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W011_growth_with_pollution.png',
-  W010: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W010_runaway_capitalism.png',
-  W001: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W001_welfare_low_growth.png',
-  W000: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W000_collapsed_world.png'
-};
-
-function showResultScreen(type){
-  const src = RESULT_MAP[type];
-  if (!src) return;
-
-  const app = document.getElementById('app');
-
-  // まず既存レイアウトを即消す
-  app.style.display = 'none';
-
-  // 背景を真っ黒に固定
-  document.body.style.background = '#000';
-
-  worldImage.src = src;
-  worldImage.style.display = 'block';
-
-  // 1フレーム待ってからフェード表示
-  requestAnimationFrame(() => {
-    worldImage.classList.add('show');
-  });
-
-  setTimeout(() => {
-    hideResultScreen();
-  }, 22000);
-}
-
-function hideResultScreen(){
-  const app = document.getElementById('app');
-
-  worldImage.classList.remove('show');
-  worldImage.style.display = 'none';
-
-  app.style.display = 'flex';
-}
-
+  
     function updateView(data){
       if (!data) return;
 
@@ -212,22 +145,9 @@ function hideResultScreen(){
 
   window.addEventListener('message', (e) => {
   const data = e.data || {};
-
-  // ★結果表示（追加）
-  if (data.type === 'SHOW_RESULT') {
-    console.log('SHOW_RESULT受信', data);
-    showResultScreen(data.resultType);
-    return;
-  }
-
-  if (data.type === 'HIDE_RESULT') {
-    hideResultScreen();
-    return;
-  }
-
-  // ★既存処理は絶対残す
   updateView(data);
 });
+
 
     async function enterFullscreen_(){
       const el = document.documentElement;
