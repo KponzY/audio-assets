@@ -32,6 +32,26 @@
       border-radius: 8px;
       z-index: 10;
     }
+
+#worldImage {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: contain;
+  background: #000;
+  display: none;
+  opacity: 0;
+  transition: opacity .8s ease;
+  z-index: 20;
+}
+
+#worldImage.show {
+  display: block;
+  opacity: 1;
+}
+
+  
   </style>
 </head>
 <body>
@@ -40,9 +60,68 @@
     <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
   </video>
 
+  <audio id="resultBgm"></audio>
+  <img id="worldImage" alt="world result">
+  
   <div id="msg">loading...</div>
 
   <script>
+  const resultBgm = document.getElementById('resultBgm');
+const worldImage = document.getElementById('worldImage');
+
+const BGM_URL = 'https://raw.githubusercontent.com/KponzY/audio-assets/2a8fc24c8f74aa9973c6f8470ffab08f7b58b76c/showing_result.mp3';
+
+const RESULT_MAP = {
+  W111: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W111_ideal_society.png',
+  W110: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W110_inequality_society.png',
+  W101: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W101_sustainable_slow_growth.png',
+  W100: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W100_environment_overregulated.png',
+  W011: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W011_growth_with_pollution.png',
+  W010: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W010_runaway_capitalism.png',
+  W001: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W001_welfare_low_growth.png',
+  W000: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W000_collapsed_world.png'
+};
+
+function showResultScreen(type){
+  const src = RESULT_MAP[type];
+  if (!src) return;
+
+  v.style.display = 'none';
+  msg.style.display = 'none';
+
+  worldImage.src = src;
+  worldImage.style.display = 'block';
+
+  requestAnimationFrame(() => {
+    worldImage.classList.add('show');
+  });
+
+  resultBgm.src = BGM_URL;
+  resultBgm.currentTime = 0;
+  resultBgm.volume = 0.7;
+
+  resultBgm.play().catch((e) => {
+    console.log('result bgm blocked:', e);
+  });
+
+  resultBgm.onended = () => {
+    hideResultScreen();
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: 'RESULT_ENDED' }, '*');
+    }
+  };
+}
+
+function hideResultScreen(){
+  try {
+    resultBgm.pause();
+    resultBgm.currentTime = 0;
+  } catch(e){}
+
+  worldImage.classList.remove('show');
+  worldImage.style.display = 'none';
+}
+    
     const v = document.getElementById('v');
     const msg = document.getElementById('msg');
 
