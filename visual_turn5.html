@@ -66,8 +66,10 @@
   <div id="msg">loading...</div>
 
   <script>
-  const resultBgm = document.getElementById('resultBgm');
+const resultBgm = document.getElementById('resultBgm');
 const worldImage = document.getElementById('worldImage');
+const qs = new URLSearchParams(location.search);
+const mode = qs.get('mode') || 'normal';
 
 const BGM_URL = 'https://raw.githubusercontent.com/KponzY/audio-assets/2a8fc24c8f74aa9973c6f8470ffab08f7b58b76c/showing_result.mp3';
 
@@ -144,14 +146,24 @@ function hideResultScreen(){
       log('error: ' + (err ? err.code : 'unknown'));
     });
 
-    window.addEventListener('load', async () => {
-      try {
-        await v.play();
-        log('play() success');
-      } catch (e) {
-        log('play() blocked: ' + e.message);
-      }
-    });
+   window.addEventListener('load', async () => {
+
+  // ★ここに追加
+  const qs = new URLSearchParams(location.search);
+  const mode = qs.get('mode') || 'normal';
+
+  if (mode === 'resulttest') {
+    v.style.display = 'none';
+    msg.style.display = 'none';
+  }
+
+  try {
+    await v.play();
+    log('play() success');
+  } catch (e) {
+    log('play() blocked: ' + e.message);
+  }
+});
   </script>
 
 </body>
