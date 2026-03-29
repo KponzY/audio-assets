@@ -31,23 +31,5 @@
     preload="auto"
     src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4">
   </video>
-
-  <script>
-    const v = document.getElementById('v');
-
-    v.addEventListener('loadedmetadata', () => console.log('loadedmetadata'));
-    v.addEventListener('canplay', () => console.log('canplay'));
-    v.addEventListener('playing', () => console.log('playing'));
-    v.addEventListener('error', () => console.log('video error', v.error));
-
-    window.addEventListener('load', async () => {
-      try {
-        await v.play();
-        console.log('play success');
-      } catch (e) {
-        console.log('play blocked', e);
-      }
-    });
-  </script>
 </body>
 </html>
