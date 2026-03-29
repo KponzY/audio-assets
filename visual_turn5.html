@@ -22,14 +22,31 @@
   </style>
 </head>
 <body>
-  <video
+
+<video
   id="v"
   controls
   autoplay
   muted
   playsinline
   preload="auto"
-  src="...">
+  src="ここにTURN5動画URL">
 </video>
+
+<script>
+const v = document.getElementById('v');
+
+// ★ 再生後に音ON
+window.addEventListener('load', async () => {
+  try {
+    await v.play();
+    v.muted = false;
+    console.log('play success & unmuted');
+  } catch(e){
+    console.log('play blocked', e);
+  }
+});
+</script>
+
 </body>
 </html>
