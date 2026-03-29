@@ -66,24 +66,22 @@
   <div id="msg">loading...</div>
 
   <script>
-const resultBgm = document.getElementById('resultBgm');
-const worldImage = document.getElementById('worldImage');
-const qs = new URLSearchParams(location.search);
-const mode = qs.get('mode') || 'normal';
-
-const BGM_URL = 'https://raw.githubusercontent.com/KponzY/audio-assets/2a8fc24c8f74aa9973c6f8470ffab08f7b58b76c/showing_result.mp3';
-
-const RESULT_MAP = {
-  W111: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W111_ideal_society.png',
-  W110: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W110_inequality_society.png',
-  W101: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W101_sustainable_slow_growth.png',
-  W100: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W100_environment_overregulated.png',
-  W011: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W011_growth_with_pollution.png',
-  W010: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W010_runaway_capitalism.png',
-  W001: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W001_welfare_low_growth.png',
-  W000: 'https://raw.githubusercontent.com/KponzY/audio-assets/4b2774a6dcb8cfaeb434c751f65b62d071f6742e/W000_collapsed_world.png'
+const v = document.getElementById('v');
+const msg = document.getElementById('msg');
+const RESULT_VIDEO_MAP = {
+  W111: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742033/W111_ideal_society_shgovy.mp4',
+  W110: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742076/W110_inequality_society_tlxnvb.mp4',
+  W101: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742074/W101_sustainable_slow_growth_z9ueyt.mp4',
+  W100: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742075/W100_environment_overregulated_oz9usr.mp4',
+  W011: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742075/W011_growth_with_pollution_qxhbw4.mp4',
+  W010: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742075/W010_runaway_capitalism_njyrbp.mp4',
+  W001: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742072/W001_welfare_low_growth_nroojv.mp4',
+  W000: 'https://res.cloudinary.com/dacfx306s/video/upload/v1774742288/W000_collapsed_world_pvkbcy.mp4'
 };
 
+let resultType = 'W111'; // デフォルト
+
+    
 function showResultScreen(type){
   const src = RESULT_MAP[type];
   if (!src) return;
@@ -115,15 +113,14 @@ function showResultScreen(type){
 }
 
 window.addEventListener('message', (e) => {
-  console.log('message received:', e.data);
-
   const data = e.data || {};
 
   if (data.type === 'SHOW_RESULT') {
-    showResultScreen(data.resultType);
+    console.log('結果タイプ受信', data.resultType);
+    resultType = data.resultType;
   }
 });
-
+    
 function hideResultScreen(){
   try {
     resultBgm.pause();
@@ -156,9 +153,8 @@ function hideResultScreen(){
       log('error: ' + (err ? err.code : 'unknown'));
     });
 
-   window.addEventListener('load', async () => {
+  window.addEventListener('load', async () => {
 
-  // ★ここに追加
   const qs = new URLSearchParams(location.search);
   const mode = qs.get('mode') || 'normal';
 
@@ -173,6 +169,21 @@ function hideResultScreen(){
   } catch (e) {
     log('play() blocked: ' + e.message);
   }
+});
+
+// ← この下に追加
+v.addEventListener('ended', () => {
+  console.log('TURN5終了 → 結果動画へ');
+
+  const next = RESULT_VIDEO_MAP[resultType];
+  if (!next) return;
+
+  v.src = next;
+  v.currentTime = 0;
+
+  v.play().catch(e => {
+    console.log('result video error', e);
+  });
 });
   </script>
 
