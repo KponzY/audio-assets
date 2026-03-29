@@ -2,133 +2,232 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-  <title>TURN5 Final Visual</title>
-  <title>TURN5 TEST</title>
+  <title>集計演出画面</title>
+  <title>Visual Screen</title>
 <style>
-html, body {
-margin: 0;
-@@ -12,85 +12,68 @@
-background: #000;
-overflow: hidden;
-}
-    .wrap {
+    body { margin:0; background:#111; color:#fff; font-family: system-ui, -apple-system, sans-serif; }
+    .wrap { display:flex; height:100vh; }
+    #img { width:45%; object-fit:cover; }
+    .right { flex:1; padding:48px; display:flex; flex-direction:column; gap:18px; }
+    #caption { font-size:56px; line-height:1.15; margin:0; }
+    .barOuter { height:18px; background:#444; border-radius:10px; overflow:hidden; }
+    #bar { height:100%; width:0%; background:#4caf50; transition: width .6s ease; }
+    #percent { font-size:36px; opacity:.9; }
+    #hint { font-size:16px; opacity:.65; margin-top:auto; }
+  </style>
+</head>
+    html, body {
+      margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
+      overflow: hidden;
       background: #000;
-      position: relative;
+      font-family: system-ui, sans-serif;
     }
 
-video {
-width: 100%;
-height: 100%;
-object-fit: contain;
-background: #000;
-display: block;
-}
-    #fallback {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,.78);
-
-    #msg {
-      position: fixed;
-      left: 12px;
-      bottom: 12px;
-color: #fff;
-      font-family: system-ui, sans-serif;
-      font-size: 20px;
-      font: 14px/1.4 system-ui, sans-serif;
-      background: rgba(0,0,0,.55);
-      padding: 8px 10px;
-      border-radius: 8px;
-z-index: 10;
-      cursor: pointer;
-}
-</style>
-</head>
 <body>
   <div class="wrap">
-    <video id="finalVideo" playsinline preload="auto" muted>
-      <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
-    </video>
-    <div id="fallback">クリックして動画を再生</div>
+    <img id="img" src="ai.png" alt="worker">
+    <div class="right">
+      <h1 id="caption">集計準備中…</h1>
+      <div class="barOuter"><div id="bar"></div></div>
+      <div id="percent">0%</div>
+      <div id="hint">※この画面は投影用です（サイドバー操作で更新）</div>
+    </div>
   </div>
-
-  <video id="v" controls autoplay muted playsinline preload="auto">
-    <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
-  </video>
-
-  <div id="msg">loading...</div>
-
-<script>
-    const v = document.getElementById('finalVideo');
-    const fallback = document.getElementById('fallback');
-    let started = false;
-    const v = document.getElementById('v');
-    const msg = document.getElementById('msg');
-
-    function notifyParent(type, extra) {
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(Object.assign({ type }, extra || {}), '*');
-      }
-    function log(t){
-      console.log(t);
-      msg.textContent = t;
-}
-
-    async function startVideo() {
-    v.addEventListener('loadstart', () => log('loadstart'));
-    v.addEventListener('loadedmetadata', () => log('loadedmetadata'));
-    v.addEventListener('loadeddata', () => log('loadeddata'));
-    v.addEventListener('canplay', () => log('canplay'));
-    v.addEventListener('canplaythrough', () => log('canplaythrough'));
-    v.addEventListener('play', () => log('play'));
-    v.addEventListener('playing', () => log('playing'));
-    v.addEventListener('pause', () => log('pause'));
-    v.addEventListener('ended', () => log('ended'));
-    v.addEventListener('error', () => {
-      const err = v.error;
-      log('error: ' + (err ? err.code : 'unknown'));
-    });
-
-    window.addEventListener('load', async () => {
-try {
-        // まず無音で再生を通す
-        v.muted = true;
-await v.play();
-
-        started = true;
-        fallback.style.display = 'none';
-        notifyParent('TURN5_VIDEO_READY');
-
-        // 再生が通った後で音を戻す
-        setTimeout(() => {
-          try { v.muted = false; } catch(e){}
-        }, 300);
-
-        log('play() success');
-} catch (e) {
-        console.log('autoplay blocked:', e);
-        fallback.style.display = 'flex';
-        log('play() blocked: ' + e.message);
-}
+    .wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #111;
+      display: flex;
+      flex-direction: row;
     }
 
-    window.addEventListener('load', startVideo);
-    fallback.addEventListener('click', startVideo);
+    #img {
+      width: 45%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+      display: block;
+    }
 
-    v.addEventListener('ended', () => {
-      notifyParent('TURN5_VIDEO_END');
+    .right {
+      flex: 1;
+      height: 100%;
+      box-sizing: border-box;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(135deg, #111, #1a1a1a);
+      color: #fff;
+    }
+
+<script>
+  const $ = (id) => document.getElementById(id);
+    #caption {
+      font-size: 56px;
+      line-height: 1.15;
+      margin: 0 0 28px 0;
+      font-weight: 700;
+    }
+
+  // GitHub Pages上の assets を基準に相対パスを補完（ai.png → https://.../ai.png）
+  const BASE = 'https://kponzy.github.io/audio-assets/';
+    .barOuter {
+      width: 100%;
+      height: 22px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+  function resolveImgSrc_(src){
+    if (!src) return src;
+    // すでに http(s) / data URL ならそのまま
+    if (/^(https?:|data:)/i.test(src)) return src;
+    // 先頭が / の場合はドメイン直下扱いになるので、基本は BASE に寄せる
+    if (src.startsWith('/')) return BASE + src.replace(/^\/+/, '');
+    // 相対は BASE へ
+    return BASE + src;
+  }
+    #bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00f2ff, #00ff9d);
+      transition: width .5s ease;
+    }
+
+  function applyState(s){
+    if (!s) return;
+    #percent {
+      margin-top: 18px;
+      font-size: 34px;
+      opacity: .92;
+    }
+
+    if (typeof s.img === 'string') {
+      $('img').src = resolveImgSrc_(s.img);
+    #hint {
+      margin-top: auto;
+      font-size: 16px;
+      opacity: .65;
+}
+    if (typeof s.caption === 'string') {
+      $('caption').textContent = s.caption;
+
+    #fsBtn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 20;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+}
+    if (typeof s.progress === 'number') {
+      const p = Math.max(0, Math.min(100, s.progress));
+      $('bar').style.width = p + '%';
+      $('percent').textContent = p + '%';
+
+    #fsBtn:hover {
+      background: rgba(255,255,255,0.14);
+}
+  }
+  </style>
+</head>
+<body>
+  <div class="wrap" id="app">
+    <button id="fsBtn">全画面</button>
+
+    <img id="img" src="" alt="visual">
+
+    <div class="right">
+      <h1 id="caption">演出待機中...</h1>
+
+      <div class="barOuter">
+        <div id="bar"></div>
+      </div>
+
+      <div id="percent">0%</div>
+      <div id="hint">presentation screen</div>
+    </div>
+  </div>
+
+  // サイドバーから postMessage を受け取って更新
+  window.addEventListener('message', (ev) => {
+    if (!ev || !ev.data) return;
+  <script>
+    const img = document.getElementById('img');
+    const caption = document.getElementById('caption');
+    const bar = document.getElementById('bar');
+    const percent = document.getElementById('percent');
+    const fsBtn = document.getElementById('fsBtn');
+
+    const d = ev.data;
+    function updateView(data){
+      if (!data) return;
+
+    // ✅新形式：{img, caption, progress} を直で送ってくる（あなたのサイドバーがこれ）
+    if (typeof d === 'object' && ('img' in d || 'caption' in d || 'progress' in d)) {
+      applyState(d);
+      return;
+      if (typeof data.img === 'string' && data.img) {
+        img.src = data.img;
+      }
+      if (typeof data.caption === 'string') {
+        caption.textContent = data.caption;
+      }
+      if (typeof data.progress === 'number') {
+        const p = Math.max(0, Math.min(100, data.progress));
+        bar.style.width = p + '%';
+        percent.textContent = p + '%';
+      }
+}
+
+    // ✅旧形式：{type:'VIS_STATE', payload:{...}} にも対応（互換）
+    if (d && d.type === 'VIS_STATE') {
+      applyState(d.payload);
+      return;
+    window.addEventListener('message', (e) => {
+      updateView(e.data);
     });
 
-    v.addEventListener('error', () => {
-      notifyParent('TURN5_VIDEO_ERROR', { message: 'video error' });
-      fallback.style.display = 'flex';
-});
-</script>
+    async function enterFullscreen_(){
+      const el = document.documentElement;
+      try {
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+        } else if (el.msRequestFullscreen) {
+          el.msRequestFullscreen();
+        }
+      } catch (e) {
+        console.log('fullscreen blocked:', e);
+      }
+}
+  });
 
+  // 初期表示（念のため）
+  applyState({ img:'ai.png', caption:'集計準備中…', progress:0 });
+</script>
+    fsBtn.addEventListener('click', enterFullscreen_);
+
+    window.addEventListener('load', () => {
+      // 開いた直後に1回だけ試す
+      setTimeout(() => {
+        enterFullscreen_();
+      }, 300);
+    });
+  </script>
 </body>
 </html>
