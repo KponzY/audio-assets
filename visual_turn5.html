@@ -1,50 +1,132 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <title>TURN5 Visual</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
+<meta charset="utf-8">
+  <title>TURN5 Final Visual</title>
+  <title>TURN5 TEST</title>
+<style>
+html, body {
+margin: 0;
+@@ -12,85 +12,68 @@
+background: #000;
+overflow: hidden;
+}
+    .wrap {
       width: 100%;
       height: 100%;
       background: #000;
-      overflow: hidden;
+      position: relative;
     }
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #000;
-      display: block;
-    }
-  </style>
+
+video {
+width: 100%;
+height: 100%;
+object-fit: contain;
+background: #000;
+display: block;
+}
+    #fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.78);
+
+    #msg {
+      position: fixed;
+      left: 12px;
+      bottom: 12px;
+color: #fff;
+      font-family: system-ui, sans-serif;
+      font-size: 20px;
+      font: 14px/1.4 system-ui, sans-serif;
+      background: rgba(0,0,0,.55);
+      padding: 8px 10px;
+      border-radius: 8px;
+z-index: 10;
+      cursor: pointer;
+}
+</style>
 </head>
 <body>
+  <div class="wrap">
+    <video id="finalVideo" playsinline preload="auto" muted>
+      <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
+    </video>
+    <div id="fallback">クリックして動画を再生</div>
+  </div>
 
-<video
-  id="v"
-  controls
-  autoplay
-  muted
-  playsinline
-  preload="auto"
-  src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4">
-</video>
+  <video id="v" controls autoplay muted playsinline preload="auto">
+    <source src="https://res.cloudinary.com/dacfx306s/video/upload/v1773501466/Turn5_Song_weof9a.mp4" type="video/mp4">
+  </video>
+
+  <div id="msg">loading...</div>
 
 <script>
-const v = document.getElementById('v');
+    const v = document.getElementById('finalVideo');
+    const fallback = document.getElementById('fallback');
+    let started = false;
+    const v = document.getElementById('v');
+    const msg = document.getElementById('msg');
 
-// ★ 再生後に音ON
-window.addEventListener('load', async () => {
-  try {
-    await v.play();
-    v.muted = false;
-    console.log('play success & unmuted');
-  } catch(e){
-    console.log('play blocked', e);
-  }
+    function notifyParent(type, extra) {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(Object.assign({ type }, extra || {}), '*');
+      }
+    function log(t){
+      console.log(t);
+      msg.textContent = t;
+}
+
+    async function startVideo() {
+    v.addEventListener('loadstart', () => log('loadstart'));
+    v.addEventListener('loadedmetadata', () => log('loadedmetadata'));
+    v.addEventListener('loadeddata', () => log('loadeddata'));
+    v.addEventListener('canplay', () => log('canplay'));
+    v.addEventListener('canplaythrough', () => log('canplaythrough'));
+    v.addEventListener('play', () => log('play'));
+    v.addEventListener('playing', () => log('playing'));
+    v.addEventListener('pause', () => log('pause'));
+    v.addEventListener('ended', () => log('ended'));
+    v.addEventListener('error', () => {
+      const err = v.error;
+      log('error: ' + (err ? err.code : 'unknown'));
+    });
+
+    window.addEventListener('load', async () => {
+try {
+        // まず無音で再生を通す
+        v.muted = true;
+await v.play();
+
+        started = true;
+        fallback.style.display = 'none';
+        notifyParent('TURN5_VIDEO_READY');
+
+        // 再生が通った後で音を戻す
+        setTimeout(() => {
+          try { v.muted = false; } catch(e){}
+        }, 300);
+
+        log('play() success');
+} catch (e) {
+        console.log('autoplay blocked:', e);
+        fallback.style.display = 'flex';
+        log('play() blocked: ' + e.message);
+}
+    }
+
+    window.addEventListener('load', startVideo);
+    fallback.addEventListener('click', startVideo);
+
+    v.addEventListener('ended', () => {
+      notifyParent('TURN5_VIDEO_END');
+    });
+
+    v.addEventListener('error', () => {
+      notifyParent('TURN5_VIDEO_ERROR', { message: 'video error' });
+      fallback.style.display = 'flex';
 });
 </script>
 
