@@ -325,6 +325,62 @@
       }, 500);
     }
 
+    function showBanners_(banners){
+
+  banners = Array.isArray(banners) ? banners : [];
+
+  const area = $('bannerArea');
+  if (!area) return;
+
+  const imgs = [
+    $('bannerImg1'),
+    $('bannerImg2'),
+    $('bannerImg3')
+  ];
+
+  imgs.forEach(function(img, index){
+
+    const b = banners[index];
+
+    if (img && b && b.thumbUrl) {
+      img.src = b.thumbUrl;
+      img.style.display = 'block';
+      img.alt = b.title || '';
+    } else if (img) {
+      img.removeAttribute('src');
+      img.style.display = 'none';
+      img.alt = '';
+    }
+  });
+
+  area.classList.add('show');
+}
+
+function clearBanners_(){
+
+  const area = $('bannerArea');
+  if (!area) return;
+
+  area.classList.remove('show');
+
+  const imgs = [
+    $('bannerImg1'),
+    $('bannerImg2'),
+    $('bannerImg3')
+  ];
+
+  setTimeout(function(){
+
+    imgs.forEach(function(img){
+      if (!img) return;
+      img.removeAttribute('src');
+      img.style.display = 'none';
+      img.alt = '';
+    });
+
+  }, 500);
+}
+
     /* =========================
        MESSAGE EVENT
     ========================== */
