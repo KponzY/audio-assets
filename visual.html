@@ -424,6 +424,16 @@ function clearBanners_(){
         return;
       }
 
+　　　if (d && d.type === 'BANNER_UPDATE') {
+  showBanners_(d.banners || []);
+  return;
+}
+
+if (d && d.type === 'BANNER_CLEAR') {
+  clearBanners_();
+  return;
+}
+      
     });
 
   </script>
