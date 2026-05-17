@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>集計演出画面</title>
+
   <style>
     html, body {
       margin: 0;
@@ -69,27 +70,114 @@
       opacity: .65;
       margin-top: auto;
     }
+
+    /* =========================
+       QUIZ AREA
+    ========================== */
+
+    .quiz-box{
+      margin-top: 36px;
+      padding: 28px 34px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #fff;
+      max-width: 900px;
+      text-align: left;
+
+      opacity: 0;
+      transform: translateY(12px);
+      transition:
+        opacity .8s ease,
+        transform .8s ease;
+    }
+
+    .quiz-box.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .quiz-question{
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.5;
+      letter-spacing: .02em;
+    }
+
+    .quiz-answer{
+      margin-top: 24px;
+      font-size: 26px;
+      line-height: 1.7;
+      color: #ffe066;
+      font-weight: 700;
+
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity .8s ease,
+        transform .8s ease;
+    }
+
+    .quiz-answer.show{
+      opacity: 1;
+      transform: translateY(0);
+    }
   </style>
 </head>
+
 <body>
   <div class="wrap">
+
     <img id="img" src="ai.png" alt="worker">
+
     <div class="right">
+
       <h1 id="caption">集計準備中…</h1>
-      <div class="barOuter"><div id="bar"></div></div>
+
+      <div class="barOuter">
+        <div id="bar"></div>
+      </div>
+
       <div id="percent">0%</div>
-      <div id="hint">※この画面は投影用です（サイドバー操作で更新）</div>
+
+      <!-- =========================
+           QUIZ AREA
+      ========================== -->
+
+      <div id="quizBox" class="quiz-box" style="display:none;">
+
+        <div id="quizQuestion" class="quiz-question">
+        </div>
+
+        <div id="quizAnswer" class="quiz-answer">
+        </div>
+
+      </div>
+
+      <div id="hint">
+        ※この画面は投影用です（サイドバー操作で更新）
+      </div>
+
     </div>
   </div>
 
   <script>
+
     const $ = (id) => document.getElementById(id);
+
     const BASE = 'https://kponzy.github.io/audio-assets/';
 
     function resolveImgSrc_(src){
       if (!src) return src;
-      if (/^(https?:|data:)/i.test(src)) return src;
-      if (src.startsWith('/')) return BASE + src.replace(/^\/+/, '');
+
+      if (/^(https?:|data:)/i.test(src)) {
+        return src;
+      }
+
+      if (src.startsWith('/')) {
+        return BASE + src.replace(/^\/+/, '');
+      }
+
       return BASE + src;
     }
 
@@ -99,29 +187,127 @@
       if (typeof s.img === 'string') {
         $('img').src = resolveImgSrc_(s.img);
       }
+
       if (typeof s.caption === 'string') {
         $('caption').textContent = s.caption;
       }
+
       if (typeof s.progress === 'number') {
-        const p = Math.max(0, Math.min(100, s.progress));
+
+        const p = Math.max(
+          0,
+          Math.min(100, s.progress)
+        );
+
         $('bar').style.width = p + '%';
         $('percent').textContent = p + '%';
       }
     }
 
+    /* =========================
+       QUIZ FUNCTIONS
+    ========================== */
+
+    function showQuiz_(quiz){
+
+      if (!quiz) return;
+
+      const box = $('quizBox');
+      const q   = $('quizQuestion');
+      const a   = $('quizAnswer');
+
+      if (!box || !q || !a) return;
+
+      box.style.display = 'block';
+
+      q.textContent = quiz.question || '';
+
+      a.textContent = '';
+
+      box.classList.add('show');
+
+      a.classList.remove('show');
+    }
+
+    function showQuizAnswer_(quiz){
+
+      if (!quiz) return;
+
+      const a = $('quizAnswer');
+
+      if (!a) return;
+
+      a.textContent = quiz.answer || '';
+
+      a.classList.add('show');
+    }
+
+    function clearQuiz_(){
+
+      const box = $('quizBox');
+      const q   = $('quizQuestion');
+      const a   = $('quizAnswer');
+
+      if (!box || !q || !a) return;
+
+      box.classList.remove('show');
+      a.classList.remove('show');
+
+      setTimeout(() => {
+
+        box.style.display = 'none';
+
+        q.textContent = '';
+        a.textContent = '';
+
+      }, 500);
+    }
+
+    /* =========================
+       MESSAGE EVENT
+    ========================== */
+
     window.addEventListener('message', (ev) => {
+
       if (!ev || !ev.data) return;
+
       const d = ev.data;
 
-      if (typeof d === 'object' && ('img' in d || 'caption' in d || 'progress' in d)) {
+      // 既存VISUAL更新
+      if (
+        typeof d === 'object' &&
+        ('img' in d || 'caption' in d || 'progress' in d)
+      ) {
         applyState(d);
         return;
       }
 
+      // VIS_STATE
       if (d && d.type === 'VIS_STATE') {
         applyState(d.payload);
+        return;
       }
+
+      // QUIZ QUESTION
+      if (d && d.type === 'QUIZ_UPDATE') {
+
+        if (d.quiz && d.quiz.showAnswer) {
+          showQuizAnswer_(d.quiz);
+        } else {
+          showQuiz_(d.quiz);
+        }
+
+        return;
+      }
+
+      // QUIZ CLEAR
+      if (d && d.type === 'QUIZ_CLEAR') {
+        clearQuiz_();
+        return;
+      }
+
     });
+
   </script>
 </body>
 </html>
